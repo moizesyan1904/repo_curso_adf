@@ -1,0 +1,83 @@
+{
+	"name": "df_union_exemplo",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "dir_blob",
+						"type": "DatasetReference"
+					},
+					"name": "vendasano"
+				},
+				{
+					"dataset": {
+						"referenceName": "dir_blob",
+						"type": "DatasetReference"
+					},
+					"name": "vendamesano"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "dir_blob",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "select1"
+				},
+				{
+					"name": "select2"
+				},
+				{
+					"name": "union1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Ano_venda as short,",
+				"          val_venda_ano as double",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     wildcardPaths:['/vendaaggano.csv']) ~> vendasano",
+				"source(output(",
+				"          Ano_venda as short,",
+				"          {Mês_venda} as short,",
+				"          val_venda_mesano as double,",
+				"          ranktopvenda as short",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     wildcardPaths:['/vendaaggmesano.csv']) ~> vendamesano",
+				"vendamesano select(mapColumn(",
+				"          ano = Ano_venda,",
+				"          valor = val_venda_mesano",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"vendasano select(mapColumn(",
+				"          ano = Ano_venda,",
+				"          valor = val_venda_ano",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"select2, select1 union(byName: true)~> union1",
+				"union1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['exemplo_union.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink1"
+			]
+		}
+	}
+}
