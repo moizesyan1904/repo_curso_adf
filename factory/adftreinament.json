@@ -1,0 +1,9 @@
+{
+	"name": "adftreinament",
+	"location": "brazilsouth",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "f50f0a68-0ef0-4d87-aee9-0854e125bfe9",
+		"tenantId": "564e063a-e26f-47b3-afe5-749c5c70d7d9"
+	}
+}
